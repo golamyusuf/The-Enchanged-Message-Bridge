@@ -3,21 +3,27 @@ package com.golamyusuf.demo.controllers;
 import com.golamyusuf.demo.MessageAdapter;
 import com.golamyusuf.demo.dtos.MessageDto;
 import com.golamyusuf.demo.dtos.MessageRequest;
+import com.golamyusuf.demo.entities.Message;
 import com.golamyusuf.demo.services.KafkaProducer;
 import com.golamyusuf.demo.utils.DocumentUploadUtils;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/message")
 public class MessageController {
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageController.class);
 
-    private KafkaProducer kafkaProducer;
+    /*private KafkaProducer kafkaProducer;
 
     public MessageController(KafkaProducer kafkaProducer) {
         this.kafkaProducer = kafkaProducer;
@@ -53,5 +59,27 @@ public class MessageController {
         }
 
         return document;
+    }*/
+
+    @Autowired
+    private KafkaTemplate<String, Message> kafkaTemplate;
+
+    @Autowired
+    Environment environment;
+
+    private final String TOPIC = "enchantedTopic"; // Replace with your Kafka topic name
+
+    @PostMapping("/send")
+    public ResponseEntity<String> sendMessage(
+            @RequestParam String sender,
+            @RequestParam String content,
+            @RequestParam(required = false) MultipartFile file) {
+        try {
+            Message message = new Message(sender, content, file);
+            kafkaTemplate.send(TOPIC, message);
+            return ResponseEntity.ok("Message sent successfully");
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Failed to send message: " + e.getMessage());
+        }
     }
 }
