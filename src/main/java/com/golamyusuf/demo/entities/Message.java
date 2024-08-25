@@ -17,13 +17,13 @@ public class Message extends BaseEntity {
     @Column(nullable = false)
     private String sender;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String content;
 
-    @Column(nullable = false)
-    private String timestamp;
+    /*@Column(nullable = false)
+    private String timestamp;*/
 
-    @Column(nullable = true)
+    @Column(name = "uploadedFileName", columnDefinition = "LONGTEXT")
     private String uploadedFileName;
 }
 
