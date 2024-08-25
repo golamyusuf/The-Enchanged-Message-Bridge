@@ -41,6 +41,6 @@ public class KafkaConsumer {
         System.out.println("Content: " + message.getContent());
         System.out.println("File name: " + file.getOriginalFilename());
         System.out.println(" BEOFRE ChatController message "+message.toString());
-        messagingTemplate.convertAndSend("/topic/messages", message);
+        messagingTemplate.convertAndSend("/topic/group", message);
     }
 }

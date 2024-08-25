@@ -70,16 +70,10 @@ public class MessageController {
     private final String TOPIC = "enchantedTopic"; // Replace with your Kafka topic name
 
     @PostMapping("/send")
-    public ResponseEntity<String> sendMessage(
-            @RequestParam String sender,
-            @RequestParam String content,
-            @RequestParam(required = false) MultipartFile file) {
-        try {
-            Message message = new Message(sender, content, file);
-            kafkaTemplate.send(TOPIC, message);
-            return ResponseEntity.ok("Message sent successfully");
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body("Failed to send message: " + e.getMessage());
-        }
+    public ResponseEntity<String> sendMessage(@RequestBody Message message) {
+        //MultipartFile file = null;
+        //Message message = new Message(sender, content, file);
+        kafkaTemplate.send(TOPIC, message);
+        return ResponseEntity.ok("Message sent successfully");
     }
 }
