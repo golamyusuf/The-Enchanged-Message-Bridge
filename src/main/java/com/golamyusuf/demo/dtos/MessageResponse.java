@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MessageDTO {
+public class MessageResponse {
 
     private Long id;
     private String sender;
     private String content;
     private String originalFileName;
     private String contentType;
-    private String filePath;
+    private byte[] fileData;
 }

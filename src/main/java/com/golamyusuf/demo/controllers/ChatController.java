@@ -1,5 +1,6 @@
 package com.golamyusuf.demo.controllers;
 
+import com.golamyusuf.demo.dtos.MessageRequest;
 import com.golamyusuf.demo.entities.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -21,7 +22,7 @@ public class ChatController {
 
     @MessageMapping("/newUser")
     @SendTo("/topic/group")
-    public Message addUser(@Payload Message message,
+    public MessageRequest addUser(@Payload MessageRequest message,
                            SimpMessageHeaderAccessor headerAccessor) {
         // Add user in web socket session
         headerAccessor.getSessionAttributes().put("username", message.getSender());

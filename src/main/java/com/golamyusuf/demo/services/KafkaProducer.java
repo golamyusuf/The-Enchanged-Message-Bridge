@@ -1,5 +1,6 @@
 package com.golamyusuf.demo.services;
 
+import com.golamyusuf.demo.dtos.MessageRequest;
 import com.golamyusuf.demo.entities.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,21 +19,14 @@ public class KafkaProducer {
     @Autowired
     Environment environment;
 
-    private KafkaTemplate<String, Message> kafkaTemplate;
+    private KafkaTemplate<String, MessageRequest> kafkaTemplate;
 
-    public KafkaProducer(KafkaTemplate<String, Message> kafkaTemplate) {
+    public KafkaProducer(KafkaTemplate<String, MessageRequest> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-   /* public void sendMessage(String message) {
-        LOGGER.info(String.format("Topic name is  %s", environment.getProperty("kafka.config.enchanted.topic")));
-        LOGGER.info(String.format("Message sent %s", message));
-        kafkaTemplate.send(environment.getProperty("kafka.config.enchanted.topic"), message);
-    }*/
-
-
     public void sendMessage(String topic, String sender, String content, MultipartFile file) throws IOException {
-        Message message = new Message(sender, content, file);
+        MessageRequest message = new MessageRequest(sender, content, file);
         kafkaTemplate.send(topic, message);
     }
 }

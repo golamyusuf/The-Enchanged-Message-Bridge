@@ -1,6 +1,9 @@
 package com.golamyusuf.demo.controllers;
 
+import com.golamyusuf.demo.adapter.MessageAdapter;
 import com.golamyusuf.demo.dtos.MessageDTO;
+import com.golamyusuf.demo.dtos.MessageRequest;
+import com.golamyusuf.demo.dtos.MessageResponse;
 import com.golamyusuf.demo.entities.Message;
 import com.golamyusuf.demo.services.MessageService;
 import org.slf4j.Logger;
@@ -12,6 +15,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -20,13 +24,16 @@ public class MessageController {
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageController.class);
 
     @Autowired
-    private KafkaTemplate<String, Message> kafkaTemplate;
+    private KafkaTemplate<String, MessageRequest> kafkaTemplate;
 
     @Autowired
     Environment environment;
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private MessageAdapter messageAdapter;
 
     private final String TOPIC = "enchantedTopic"; // Replace with your Kafka topic name
 
@@ -39,21 +46,31 @@ public class MessageController {
         System.out.println(" 86 messageRequestVal content "+content);
         System.out.println(" 87 messageRequestVal file "+file);
         try {
-            Message message = new Message(sender, content, file);
-            kafkaTemplate.send(TOPIC, message);
-
-            MessageDTO messageDTO = messageService.saveMessage(message);
+            MessageRequest messageRequest = new MessageRequest(sender, content, file);
+            kafkaTemplate.send(TOPIC, messageRequest);
+            System.out.println("46 MessageController ");
+            Message message = messageAdapter.toEntity(messageRequest);
+            System.out.println("48 MessageController before Saving ");
+            messageService.saveMessage(message);
+            System.out.println("50 MessageController After Saving ");
             LOGGER.info("Message saved to database for sender: {}", sender);
             return ResponseEntity.ok("Message sent successfully");
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Failed to send message: " + e.getMessage());
         }
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<MessageDTO>> getAllMessages() {
-        List<MessageDTO> messages = messageService.getAllMessages();
-        return ResponseEntity.ok(messages);
+    public ResponseEntity<List<MessageResponse>> getAllMessages() throws IOException {
+        try {
+            List<MessageResponse> allMessages = messageService.getAllMessages();
+            return ResponseEntity.ok(allMessages);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

@@ -1,5 +1,6 @@
 package com.golamyusuf.demo.services;
 
+import com.golamyusuf.demo.dtos.MessageRequest;
 import com.golamyusuf.demo.entities.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class KafkaConsumer {
     }*/
 
     @KafkaListener(topics = "enchantedTopic", groupId = "myGroup")
-    public void listen(Message message) {
+    public void listen(MessageRequest message) {
         // Convert byte array back to MultipartFile if needed
         MultipartFile file = message.toMultipartFile();
 

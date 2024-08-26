@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 
 @Data
@@ -30,8 +32,7 @@ public class Message extends BaseEntity {
     private Long id;
     private String sender;
     private String content;
-    @Lob
-    private byte[] fileData;
+    private String filePath;
     private String originalFileName;
     private String contentType;
 
@@ -39,12 +40,30 @@ public class Message extends BaseEntity {
         this.sender = sender;
         this.content = content;
         if (file != null && !file.isEmpty()) {
-            this.fileData = file.getBytes();
-            this.originalFileName = file.getOriginalFilename();
+            String fileName = file.getOriginalFilename();
+            this.filePath = saveFile(file); // Save the file and get the file path
+            this.originalFileName = fileName;
             this.contentType = file.getContentType();
         }
     }
 
+    private String saveFile(MultipartFile file) throws IOException {
+        String fileName = file.getOriginalFilename();
+        String directory = "uploaded-files"; // Directory for storing files
+
+        // Ensure the directory exists
+        File dir = new File(directory);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        Path filePath = Paths.get(directory, fileName);
+        Files.write(filePath, file.getBytes());
+
+        return filePath.toString(); // Return the relative file path
+    }
+
+    // Convert to MultipartFile
     public MultipartFile toMultipartFile() {
         return new MultipartFile() {
             @Override
@@ -64,36 +83,34 @@ public class Message extends BaseEntity {
 
             @Override
             public boolean isEmpty() {
-                return fileData == null || fileData.length == 0;
+                return filePath == null || filePath.isEmpty();
             }
 
             @Override
             public long getSize() {
-                return Optional.ofNullable(fileData).isPresent() ? fileData.length : 0;
+                File file = new File(filePath);
+                return file.length();
             }
 
             @Override
-            public byte[] getBytes() {
-                return fileData;
+            public byte[] getBytes() throws IOException {
+                return Files.readAllBytes(Paths.get(filePath));
             }
 
             @Override
             public InputStream getInputStream() throws IOException {
-                return new ByteArrayInputStream(fileData);
+                return Files.newInputStream(Paths.get(filePath));
             }
 
             @Override
             public Resource getResource() {
-                return MultipartFile.super.getResource();
+                return new FileSystemResource(filePath);
             }
 
             @Override
             public void transferTo(File dest) throws IOException, IllegalStateException {
-                Path path = dest.toPath();
-                Files.write(path, fileData);
+                Files.copy(Paths.get(filePath), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
         };
     }
 }
-
-
