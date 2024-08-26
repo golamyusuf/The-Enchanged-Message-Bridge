@@ -18,19 +18,11 @@ public class KafkaConsumer {
     Environment environment;
 
     private final SimpMessagingTemplate messagingTemplate;
-
-
     private static final Logger LOGGER = LoggerFactory.getLogger((KafkaConsumer.class));
 
     public KafkaConsumer(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
     }
-
-   /* @KafkaListener(topics = "enchantedTopic", groupId = "myGroup")
-    public void consume(String message){
-        LOGGER.info(String.format("Message recived -> %s", message));
-        template.convertAndSend("/topic/group", message);
-    }*/
 
     @KafkaListener(topics = "enchantedTopic", groupId = "myGroup")
     public void listen(MessageRequest message) {
@@ -38,10 +30,10 @@ public class KafkaConsumer {
         MultipartFile file = message.toMultipartFile();
 
         // Process the message
-        System.out.println("Sender: " + message.getSender());
-        System.out.println("Content: " + message.getContent());
-        System.out.println("File name: " + file.getOriginalFilename());
-        System.out.println("File name: " + file.getSize());
+        LOGGER.info("Sender: " + message.getSender());
+        LOGGER.info("Content: " + message.getContent());
+        LOGGER.info("File name: " + file.getOriginalFilename());
+        LOGGER.info("File name: " + file.getSize());
         messagingTemplate.convertAndSend("/topic/group", message);
     }
 }

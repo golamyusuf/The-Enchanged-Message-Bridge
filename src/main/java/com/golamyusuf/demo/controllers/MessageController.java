@@ -42,19 +42,17 @@ public class MessageController {
             @RequestPart(value="sender",  required = true)  String sender,
             @RequestPart(value="content", required = true) String content,
             @RequestPart(value = "file", required = false) MultipartFile file) {
-        System.out.println(" 85 messageRequestVal sender "+sender);
-        System.out.println(" 86 messageRequestVal content "+content);
-        System.out.println(" 87 messageRequestVal file "+file);
+       LOGGER.info("sender "+sender+" content "+content);
         try {
             MessageRequest messageRequest = new MessageRequest(sender, content, file);
             kafkaTemplate.send(TOPIC, messageRequest);
-            System.out.println("46 MessageController ");
+
             Message message = messageAdapter.toEntity(messageRequest);
-            System.out.println("48 MessageController before Saving ");
             messageService.saveMessage(message);
-            System.out.println("50 MessageController After Saving ");
+
             LOGGER.info("Message saved to database for sender: {}", sender);
             return ResponseEntity.ok("Message sent successfully");
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Failed to send message: " + e.getMessage());

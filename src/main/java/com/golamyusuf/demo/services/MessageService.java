@@ -31,14 +31,11 @@ public class MessageService {
     }
 
     public List<MessageResponse> getAllMessages() throws IOException {
-        System.out.println("34 MessageService ");
         List<MessageResponse> collect = null;
         try {
              collect = messageRepository.findAll().stream()
                     .map(message -> {
-
                         return MessageAdapter.mapToResponse(message);
-
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {

@@ -5,7 +5,6 @@ import com.golamyusuf.demo.dtos.MessageRequest;
 import com.golamyusuf.demo.dtos.MessageResponse;
 import com.golamyusuf.demo.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
