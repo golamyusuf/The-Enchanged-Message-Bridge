@@ -2,25 +2,35 @@ version: '3.8'
 
 services:
   zookeeper:
-    image: bitnami/zookeeper:latest
+    image: bitnami/zookeeper:3.8.1
     container_name: zookeeper
     ports:
       - "2181:2181"
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"  # Allow anonymous login (not recommended for production)
+    networks:
+      - enchanted_network
 
   kafka:
-    image: bitnami/kafka:3.5.2
+    image: wurstmeister/kafka:2.12-2.3.0
     container_name: kafka
     ports:
       - "9092:9092"
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_LISTENER_NAME_PREFIX: PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - enchanted_network
 
   mysql:
-    image: bitnami/mysql:8.0.39
+    image: mysql:8.0
     container_name: mysql_db
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -31,8 +41,10 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - enchanted_network
 
-  springboot-app:
+  the-enchanted-message-bridge:
     image: enchanted-message-bridge:latest
     container_name: enchanted-message-bridge
     environment:
@@ -43,8 +55,14 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - kafka
       - mysql
+      - kafka
+    restart: always
+    networks:
+      - enchanted_network
 
 volumes:
   mysql_data:
+
+networks:
+  enchanted_network:
